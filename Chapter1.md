@@ -73,7 +73,7 @@ Core concepts:
 
 > there are *infinitely* many density functions $p_{model}(x)$ that we can use to estimate $p_{data}(x)$.
 
-*Parametric modeling*: a *parametric model* is a family of density functions $p_{\theta|(x)$
+*Parametric modeling*: a *parametric model* is a family of density functions $p_{\theta}(x)$
 that can be described using a finite number of parameters, $\theta$.
 
 *Likelihood*:

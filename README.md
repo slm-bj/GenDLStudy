@@ -7,3 +7,4 @@ by David Foster.
 ## Symposia
 
 * 2024.6.1: [Preface](Preface.md)
+* 2024.6.8: [Chapter 1](Chapter1.md)

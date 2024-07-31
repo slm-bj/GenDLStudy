@@ -1,22 +1,21 @@
-[tool.poetry]
-name = "gendlstudy"
+[project]
+name = "generative-deep-learning-study"
+authors = [
+  {name = "Leo", email = "leetschau@gmail.com"},
+]
+
 version = "0.1.0"
-description = "Source codes of Generative Deep Learning"
-authors = ["Leo <leetschau@gmail.com>"]
-license = "MIT"
-readme = "README.md"
+requires-python = ">=3.11"
 
-[tool.poetry.dependencies]
-python = "^3.11"
-tensorflow = "^2.16.1"
-keras = "^3.3.3"
-keras-cv = "0.9.0"
-matplotlib = "3.9.0"
-PyQt5 = "^5.15.10"
+dependencies = [
+  "tensorflow",
+  "numpy",
+  "pandas",
+  "keras",
+  "matplotlib",
+]
 
-[tool.poetry.group.dev.dependencies]
-ipython = "^8.25.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[project.optional-dependencies]
+dev = [
+  "ipython",
+]

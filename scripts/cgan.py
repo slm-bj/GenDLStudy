@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from pathlib import Path
+import matplotlib.pyplot as plt
 from tensorflow.keras import layers, models, callbacks, utils, metrics, optimizers
 
 IMAGE_SIZE = 64
@@ -267,3 +269,30 @@ history = cgan.fit(
 
 generator.save("./models/generator.keras")
 critic.save('./models/critic.keras')
+
+# Generate images
+
+GROUP_SIZE = 10
+OUTPUT_PATH = './output'
+
+
+def normalize_img(images):
+    assert imgs.shape == (GROUP_SIZE, IMAGE_SIZE, IMAGE_SIZE, CHANNELS)
+    return [(i - i.min()) / (i.max() - i.min()) for i in images]
+
+
+Path(OUTPUT_PATH).mkdir(parents=True, exist_ok=True)
+
+# 0 label
+z_sample = np.random.normal(size=(GROUP_SIZE, Z_DIM))
+class_label = np.repeat([[1, 0]], GROUP_SIZE, axis=0)
+imgs = cgan.generator.predict([z_sample, class_label])
+for idx, img in enumerate(normalize_img(imgs)):
+    plt.imsave(f'output/cgan_generated_l0_{idx}.jpg', img)
+
+# 1 label
+z_sample = np.random.normal(size=(GROUP_SIZE, Z_DIM))
+class_label = np.repeat([[0, 1]], GROUP_SIZE, axis=0)
+imgs = cgan.generator.predict([z_sample, class_label])
+for idx, img in enumerate(normalize_img(imgs)):
+    plt.imsave(f'output/cgan_generated_l1_{idx}.jpg', img)

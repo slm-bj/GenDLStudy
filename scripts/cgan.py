@@ -49,7 +49,7 @@ train = train_data.map(lambda x, y:
 # 2. Build the GAN
 
 critic_input = layers.Input(shape=(IMAGE_SIZE, IMAGE_SIZE, CHANNELS))
-label_input = layers.Input(shape=(IMAGE_SIZE, IMAGE_SIZE, CHANNELS))
+label_input = layers.Input(shape=(IMAGE_SIZE, IMAGE_SIZE, CLASSES))
 x = layers.Concatenate(axis=-1)([critic_input, label_input])
 x = layers.Conv2D(64, kernel_size=4, strides=2, padding='same')(x)
 x = layers.LeakyReLU(0.2)(x)
@@ -239,13 +239,15 @@ class ImageGenerator(callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         random_latent_vectors = tf.random.normal(shape=(self.num_img,
                                                         self.latent_dim))
-        zero_label = np.repeat([[1, 0]], self.num_img, axis=0)
-        generated_images = self.model.generaor(
+        zero_label = tf.convert_to_tensor(
+            np.repeat([[1, 0]], self.num_img, axis=0))
+        generated_images = self.model.generator(
             [random_latent_vectors, zero_label])
         generated_images = generated_images * 127.5 + 127.5
         generated_images = generated_images.numpy()
 
-        one_label = np.repeat([[0, 1]], self.num_img, axis=0)
+        one_label = tf.convert_to_tensor(
+            np.repeat([[0, 1]], self.num_img, axis=0))
         generated_images = self.model.generator(
             [random_latent_vectors, one_label])
         generated_images = generated_images * 127.5 + 127.5
@@ -263,5 +265,5 @@ history = cgan.fit(
     ],
 )
 
-generator.save("./models/generator")
-critic.save('./models/critic')
+generator.save("./models/generator.keras")
+critic.save('./models/critic.keras')

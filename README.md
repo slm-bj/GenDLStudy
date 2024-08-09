@@ -10,8 +10,10 @@ by David Foster.
 * 2024.6.8: [Chapter 1](Chapter1.md), Leo
 * 2024.6.15: [Chapter 2](Chapter2.md), Leo
 * 2024.6.22: part 1 of [Chapter 3](Chapter3.md), Sharon
-* 2014.7.6: VAE of Chapter 3, Sharon
-* 2014.7.20: DCGAN in Chapter 4, GuangYu
+* 2024.7.6: VAE of chapter 3, Sharon
+* 2024.7.20: DCGAN of chapter 4, GuangYu
+* 2024.7.27: WGAN-GP of chapter 4, Xiaojie
+* 2024.8.4: CGAN of chapter 4, Leo
 
 ## Running Codes
 

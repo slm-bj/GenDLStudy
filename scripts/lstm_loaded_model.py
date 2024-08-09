@@ -1,19 +1,25 @@
+# %% [markdown]
+# # Generate Texts with a Pretained LSTM Model
+#
+# This script shows how to generate texts with a pretrained LSTM model.
+# It's written based on script lstm.py in the same folder.
+
 # %%
-import json
 import re
+import sys
+import json
 import string
-import tensorflow as tf
 import numpy as np
-from tensorflow.keras import callbacks, layers, losses, models
+import tensorflow as tf
+from pathlib import Path
+from tensorflow.keras import layers, models
 
 VOCAB_SIZE = 10000
-EMBEDDING_SIZE = 100  # how long is the vector in embedding space for each token
 SEQ_SIZE = 200  # number of tokens (words) in a sequence
-UNIT_SIZE = 128  # number of units in a LSTM cell
+MODEL_PATH = "./models/lstm.keras"
 
 # %% [markdown]
-# # The Recipe Dataset
-
+# # Load Data and Generate Vocabulary
 
 # %%
 def pad_punctuation(s):
@@ -28,7 +34,6 @@ def pad_punctuation(s):
     return s
 
 
-# %% Import data, convert to tf.data.Dataset
 with open('../data/full_format_recipes.json') as jd:
     recipe_data = json.load(jd)
 
@@ -38,24 +43,9 @@ filtered_data = [
     and 'directions' in x and x['directions'] is not None
 ]
 
-# %% [markdown]
-# # Tokenization
-
-# %%
 text_data = [pad_punctuation(x) for x in filtered_data]
 text_ds = tf.data.Dataset.from_tensor_slices(text_data).batch(32).shuffle(1000)
 
-# %% [markdown]
-# The last command grouped all `len(text_data)` recipes into `len(text_data)/32 == len(text_ds)` groups,
-# then shuffle these groups. See [tf.data.Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset) for examples.
-
-# %% Study tf.data.Dataset
-from collections import Counter
-
-recipes = [len(batch) for batch in text_ds]
-Counter(recipes)  # Counter({32: 628, 15: 1})
-
-# %%
 vectorize_layer = layers.TextVectorization(
     standardize='lower',
     max_tokens=VOCAB_SIZE,
@@ -67,54 +57,25 @@ vectorize_layer.adapt(text_ds)
 vocab = vectorize_layer.get_vocabulary()  # type: list, len(vocab): VOCAB_SIZE
 
 # %% [markdown]
-# # Creating the Training Set
-
-
-# %%
-def prepare_inputs(text):
-    text = tf.expand_dims(text, -1)
-    tokenized_sentences = vectorize_layer(text)
-    x = tokenized_sentences[:, :-1]
-    y = tokenized_sentences[:, 1:]
-    return x, y
-
-
-train_ds = text_ds.map(prepare_inputs)
-
-# %% [markdown]
-# # The Embedding Layer
-# > An *embedding* layer is essentially a lookup table that converts each
-# > integer token into a vector of length embedding_size, as shown in Figure 5-2.
-#
-# > We embed each integer token into a continuous vector because it enables the model to learn a representation for each word that is able to be updated through backpropa‐ gation.
+# # Load Model and Build Text Generator
 
 # %%
-inputs = layers.Input(shape=(None, ), dtype='int32')
-x = layers.Embedding(VOCAB_SIZE, EMBEDDING_SIZE)(inputs)
+if not Path(MODEL_PATH).exists():
+    sys.exit(f"Model file {MODEL_PATH} does not exist!")
 
-# %% [markdown]
-# # Training the LSTM
+lstm = models.load_model(MODEL_PATH, compile=False)
 
-# %%
-x = layers.LSTM(UNIT_SIZE, return_sequences=True)(x)
-outputs = layers.Dense(VOCAB_SIZE, activation='softmax')(x)
-lstm = models.Model(inputs, outputs)
-lstm.summary()
+class TextGenerator:
 
-loss_fn = losses.SparseCategoricalCrossentropy()
-lstm.compile('adam', loss_fn)
-
-
-class TextGenerator(callbacks.Callback):
-
-    def __init__(self, index_to_word, top_k=10):
+    def __init__(self, index_to_word, model, top_k=10):
         self.index_to_word = index_to_word
         self.word_to_index = {
             word: index
             for index, word in enumerate(index_to_word)
         }
+        self.model = model
 
-    def sample_from(self, probs, temperature):
+    def _sample_from(self, probs, temperature):
         prb = probs**(1 / temperature)
         prb = prb / np.sum(prb)
         return np.random.choice(len(prb), p=prb), prb
@@ -128,35 +89,15 @@ class TextGenerator(callbacks.Callback):
         while len(start_tokens) < max_tokens and sample_token != 0:
             x = np.array([start_tokens])
             y = self.model.predict(x)
-            sample_token, probs = self.sample_from(y[0][-1], temperature)
+            sample_token, probs = self._sample_from(y[0][-1], temperature)
             info.append({'prompt': start_prompt, 'word_probs': probs})
             start_tokens.append(sample_token)
             start_prompt = start_prompt + ' ' + self.index_to_word[sample_token]
         print(f'\ngenerated text:\n{start_prompt}\n')
         return info
 
-    def on_epoch_end(self, epoch, logs=None):
-        self.generate('recipe for', max_tokens=100, temperature=1.0)
 
-
-model_checkpoint_callback = callbacks.ModelCheckpoint(
-    filepath="./checkpoint/chapter5-lstm.weights.h5",
-    save_weights_only=True,
-    save_freq="epoch",
-    verbose=0,
-)
-
-tensorboard_callback = callbacks.TensorBoard(log_dir="./logs")
-
-text_generator = TextGenerator(vocab)
-
-lstm.fit(train_ds,
-         epochs=25,
-         callbacks=[
-             model_checkpoint_callback, tensorboard_callback, text_generator
-         ])
-
-lstm.save('./models/lstm.keras')
+text_generator = TextGenerator(vocab, lstm)
 
 # %% [markdown]
 # # Generate Text using the LSTM model
@@ -196,20 +137,18 @@ info = text_generator.generate("recipe for roasted vegetables | chop 1 /",
 print_probs(info, vocab)
 
 # %% [markdown]
-# > Prompt: recipe for roasted vegetables | chop 1 / 2 cup warm water and add to a bowl .
-# > add the onion , garlic , and garlic ; cook , stirring , until fragrant ,
-# > about 2 minutes . add the garlic , garlic , and salt and cook , stirring
-#
-# The result showed that the quality of the generated texts are not good enough.
+# > Prompt: recipe for roasted vegetables | chop 1 / 2 cup
+# > warm water and add to the bowl of water . bring to a boil , then
+# > reduce heat to medium - low and cook , stirring occasionally ,
+# > until vegetables are tender , about 10 minutes . add the
+# The generated texts are legible!
 
 # %% test for new prompt generation
 info = text_generator.generate("recipe for Japanese Sushi",
-                               max_tokens=20,
+                               max_tokens=30,
                                temperature=0.2)
 print_probs(info, vocab)
 # %% [markdown]
-# > Prompt: recipe for Japanese Sushi | combine all ingredients in a mixing glass and
-# > stir well . strain into a cocktail
-#
-# The result showed that the narrative flow (rather than individual word)
-# generated by the model are limited in the scope of the training set.
+# > Prompt: recipe for Japanese Sushi | combine all ingredients in a cocktail shaker
+# > and shake vigorously . strain into a cocktail glass .
+

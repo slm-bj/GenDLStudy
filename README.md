@@ -14,6 +14,8 @@ by David Foster.
 * 2024.7.20: DCGAN of chapter 4, GuangYu
 * 2024.7.27: WGAN-GP of chapter 4, Xiaojie
 * 2024.8.4: CGAN of chapter 4, Leo
+* 2024.8.10: LSTM of chapter 5, Sharon
+* 2024.8.18: GRU and Bidirectional LSTM of chapter 5, Sharon
 
 ## Running Codes
 

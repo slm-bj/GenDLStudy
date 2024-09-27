@@ -16,6 +16,11 @@ by David Foster.
 * 2024.8.4: CGAN of chapter 4, Leo
 * 2024.8.10: LSTM of chapter 5, Sharon
 * 2024.8.18: GRU and Bidirectional LSTM of chapter 5, Sharon
+* 2024.8.25: Pixel CNN, GuangYu
+* 2024.9.1: chapter 6, Real NVP, Xiaojie
+* 2024.9.8: Real NVP
+* 2024.9.16: Energy-based Models, theory study
+* 2024.9.22: Energy Based Models, implementation discussion
 
 ## Running Codes
 

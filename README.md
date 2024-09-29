@@ -21,6 +21,7 @@ by David Foster.
 * 2024.9.8: Real NVP
 * 2024.9.16: Energy-based Models, theory study
 * 2024.9.22: Energy Based Models, implementation discussion
+* 2024.9.28: Diffusion Models, theory discussion
 
 ## Running Codes
 

@@ -8,14 +8,14 @@ version = "0.1.0"
 requires-python = ">=3.11"
 
 dependencies = [
-  "tensorflow",
+  "tensorflow[and-cuda]",
   "numpy",
   "pandas",
   "keras",
   "matplotlib",
 ]
 
-[project.optional-dependencies]
-dev = [
-  "ipython",
+[tool.uv]
+dev-dependencies = [
+    "ipython>=8.27.0",
 ]

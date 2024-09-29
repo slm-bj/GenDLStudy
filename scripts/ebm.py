@@ -63,6 +63,7 @@ if LOAD_MODEL:
 
 # # 2. Setup a Langevin Sampler Function
 
+@tf.function
 def generate_samples(model, inp_imgs, steps, step_size, noise, return_img_per_step=False):
     imgs_per_step = []
     for _ in range(steps):

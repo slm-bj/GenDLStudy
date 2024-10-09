@@ -133,6 +133,7 @@ def offset_cosine_diffusion_schedule(diffusion_times):
 
 # ## Sinusoidal Embedding
 
+@keras.utils.register_keras_serializable()
 def sinusoidal_embedding(x):
     frequencies = tf.exp(tf.linspace(tf.math.log(1.0), tf.math.log(1000.0), 16,))
     angular_speeds = 2.0 * math.pi * frequencies
@@ -207,7 +208,6 @@ unet = models.Model([noisy_images, noise_variances], x, name="unet")
 
 # # The Reverse Diffusion Process
 
-@keras.saving.register_keras_serializable()
 class DiffusionModel(models.Model):
     def __init__(self, nw):
         super().__init__()
@@ -263,7 +263,8 @@ class DiffusionModel(models.Model):
         batch_size = tf.shape(images)[0]
         diffusion_times = tf.random.uniform(
                 shape=(batch_size, 1, 1, 1), minval=0.0, maxval=1.0)  # $t$ (line no.3) in figure 8-7
-        noise_rates, signal_rates = self.cosine_diffusion_schedule(diffusion_times)  # $\alpha_t$ in figure 8-7
+        # noise_rates, signal_rates = self.cosine_diffusion_schedule(diffusion_times)  # $\alpha_t$ in figure 8-7
+        noise_rates, signal_rates = self.diffusion_schedule(diffusion_times)  # $\alpha_t$ in figure 8-7
         noisy_images = signal_rates * images + noise_rates * noises  # $x_t$ define at the top of page 211
 
         with tf.GradientTape() as tape:
@@ -298,14 +299,16 @@ class DiffusionModel(models.Model):
 ddm = DiffusionModel(unet)
 ddm.normalizer.adapt(train)
 
+MODEL_CHECKPOINTS_FILE_PATH = "./checkpoint/ddm-checkpoints.weights.h5"
 if LOAD_MODEL:
     ddm.built = True
-    ddm.load_weights("./checkpoint/ddm-checkpoints.ckpt")
+    ddm.load_weights(MODEL_CHECKPOINTS_FILE_PATH)
 
-ddm.compile(optimizer=optimizers.experimental.AdamW(learning_rate=1e-3, weight_decay=1e-4),
-            loss=losses.mean_absolute_error)
+ddm.compile(optimizer=optimizers.AdamW(learning_rate=1e-3, weight_decay=1e-4),
+            loss=losses.mse)
+
 model_checkpoint_callback = callbacks.ModelCheckpoint(
-        filepath="./checkpoint/ddm-checkpoints.ckpt",
+        filepath=MODEL_CHECKPOINTS_FILE_PATH,
         save_weights_only=True,
         save_freq="epoch",
         verbose=0,

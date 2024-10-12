@@ -214,7 +214,7 @@ class DiffusionModel(models.Model):
         self.normalizer = layers.Normalization()
         self.network = nw  # described in section "The U-Net Denoising Model"
         self.ema_network = models.clone_model(self.network)
-        self.diffusion_schedule = cosine_diffusion_schedule
+        self.diffusion_schedule = offset_cosine_diffusion_schedule
 
     def compile(self, **kwargs):
         super().compile(**kwargs)
@@ -259,6 +259,7 @@ class DiffusionModel(models.Model):
 
     def train_step(self, images):
         images = self.normalizer(images, training=True)  # $x_0$ (line no.2) in figure 8-7
+        # noises = tf.random.normal(shape=(BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, 3))  # $\epsilon$ (line no.4) in figure 8-7
         noises = tf.random.normal(shape=tf.shape(images))  # $\epsilon$ (line no.4) in figure 8-7
         batch_size = tf.shape(images)[0]
         diffusion_times = tf.random.uniform(

@@ -23,6 +23,7 @@ by David Foster.
 * 2024.9.22: Energy Based Models, implementation discussion
 * 2024.9.28: Diffusion Models, theory discussion
 * 2024.10.6: Diffusion Models, theory discussion continued, Sharon and I
+* 2024.10.13: Transformers, theory discussion, GuangYu
 
 ## Running Codes
 

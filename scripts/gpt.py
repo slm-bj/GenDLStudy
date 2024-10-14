@@ -19,7 +19,7 @@ VALIDATION_SPLIT = 0.2
 SEED = 42
 LOAD_MODEL = False
 BATCH_SIZE = 32
-EPOCHS = 20
+EPOCHS = 5
 
 with open("../data/winemag-data-130k-v2.json") as json_data:
     wine_data = json.load(json_data)
@@ -83,7 +83,7 @@ print(example_input_output[1][0])
 def causal_attention_mask(batch_size, n_dest, n_src, dtype):
     i = tf.range(n_dest)[:, None]
     j = tf.range(n_src)
-    m = i >=j - n_src * n_dest
+    m = i >= j - n_src + n_dest
     mask = tf.cast(m, dtype)
     mask = tf.reshape(mask, [1, n_dest, n_src])
     mult = tf.concat([tf.expand_dims(batch_size, -1),

@@ -7,5 +7,6 @@ scripts/output/
 scripts/models/
 scripts/checkpoint/
 scripts/generative_deep_learning_study.egg-info/
+scripts/parsed_data/
 *.ipynb
 *.keras

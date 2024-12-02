@@ -24,27 +24,17 @@ by David Foster.
 * 2024.9.28: Diffusion Models, theory discussion
 * 2024.10.6: Diffusion Models, theory discussion continued, Sharon and I
 * 2024.10.13: Transformers, theory discussion, GuangYu
+* 2024.10.20: Transformers, coding discussion, GuangYu
+* 2024.10.27: ProGAN in Advanced GANs, Xiaojie
+* 2024.11.3: StyleGAN & StyleGAN2, Xiaojie
+* 2024.11.16: StyleGAN2, Xiaojie
+* 2024.11.30: Xiaojie: VQ-GAN & Leo: Music generation
 
 ## Running Codes
 
-Some Python scripts are converted from Jupyter notebook to avoid
-Base64 strings messed up version history.
-These scripts can be executed in 3 ways:
-
-First as Python script:
+Install [uv](https://github.com/astral-sh/uv) and run:
 ```sh
-cd scripts
-poetry run ipython <script>.py
+uv pip install -r pyproject.toml
+uv run python <script>.py  # or:
+uv run ipython music_transformer.ipy
 ```
-
-Or convert to Jupyter notebook and play with it interactively:
-```sh
-poetry jupytext --to notebook <script.py>
-```
-
-Lastly you can convert and execute it in one go:
-```sh
-poetry jupytext --to notebook --execute <script.py>
-```
-
-Choose one from them according to your needs.

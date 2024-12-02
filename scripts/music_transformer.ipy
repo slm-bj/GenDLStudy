@@ -1,0 +1,62 @@
+import os
+import glob
+import numpy as np
+import time
+import matplotlib.pyplot as plt
+
+import tensorflow as tf
+from tensorflow.keras import layers, models, losses, callbacks
+
+import music21
+
+from music_utils import (
+    parse_midi_files,
+    load_parsed_files,
+    get_midi_note,
+    SinePositionEncoding,
+)
+
+
+PARSE_MIDI_FILES = True
+PARSED_DATA_PATH = "./parsed_data/"
+DATASET_REPETITIONS = 1
+
+SEQ_LEN = 50
+EMBEDDING_DIM = 256
+KEY_DIM = 256
+N_HEADS = 5
+DROPOUT_RATE = 0.3
+FEED_FORWARD_DIM = 256
+LOAD_MODEL = False
+
+# optimization
+EPOCHS = 5000
+BATCH_SIZE = 256
+
+GENERATE_LEN = 50
+
+
+# # Prepare the Data
+
+!rm -rf {PARSED_DATA_PATH}
+!mkdir {PARSED_DATA_PATH}
+
+file_list = glob.glob("../data/chapter11-midi/*.mid")
+print(f"Found {len(file_list)} midi files")
+example_score = (
+    music21.converter.parse(file_list[1]).splitAtQuarterLength(12)[0].chordify()
+)
+example_score.show()
+example_score.show("text")
+if PARSE_MIDI_FILES:
+    notes, durations = parse_midi_files(
+        file_list, music21.converter, SEQ_LEN + 1, PARSED_DATA_PATH
+    )
+else:
+    notes, durations = load_parsed_files()
+
+example_notes = notes[658]
+example_durations = durations[658]
+print("\nNotes string\n", example_notes, "...")
+print("\nDuration string\n", example_durations, "...")
+

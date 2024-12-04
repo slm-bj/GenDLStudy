@@ -1,3 +1,7 @@
+%load_ext autoreload
+%autoreload 2
+%autoindent off
+
 import os
 import glob
 import numpy as np
@@ -16,8 +20,9 @@ from music_utils import (
     SinePositionEncoding,
 )
 
+# # Parameters
 
-PARSE_MIDI_FILES = True
+PARSE_MIDI_FILES = False
 PARSED_DATA_PATH = "./parsed_data/"
 DATASET_REPETITIONS = 1
 
@@ -35,11 +40,7 @@ BATCH_SIZE = 256
 
 GENERATE_LEN = 50
 
-
 # # Prepare the Data
-
-!rm -rf {PARSED_DATA_PATH}
-!mkdir {PARSED_DATA_PATH}
 
 file_list = glob.glob("../data/chapter11-midi/*.mid")
 print(f"Found {len(file_list)} midi files")
@@ -49,14 +50,76 @@ example_score = (
 example_score.show()
 example_score.show("text")
 if PARSE_MIDI_FILES:
+    !rm -rf {PARSED_DATA_PATH}
+    !mkdir {PARSED_DATA_PATH}
     notes, durations = parse_midi_files(
         file_list, music21.converter, SEQ_LEN + 1, PARSED_DATA_PATH
     )
 else:
-    notes, durations = load_parsed_files()
+    notes, durations = load_parsed_files(PARSED_DATA_PATH)
 
 example_notes = notes[658]
 example_durations = durations[658]
 print("\nNotes string\n", example_notes, "...")
 print("\nDuration string\n", example_durations, "...")
+
+# # Tokenize the Data
+
+def create_dataset(elements):
+    ds = (
+        tf.data.Dataset.from_tensor_slices(elements)
+        .batch(BATCH_SIZE, drop_remainder=True)
+        .shuffle(1000)
+    )
+    vectorize_layer = layers.TextVectorization(
+        standardize=None, output_mode="int"
+    )
+    vectorize_layer.adapt(ds)
+    vocab = vectorize_layer.get_vocabulary()
+    return ds, vectorize_layer, vocab
+
+notes_seq_ds, notes_vectorize_layer, notes_vocab = create_dataset(notes)
+durations_seq_ds, durations_vectorize_layer, durations_vocab = create_dataset(durations)
+seq_ds = tf.data.Dataset.zip((notes_seq_ds, durations_seq_ds))
+
+# Display the same example notes and durations converted to ints
+example_tokenised_notes = notes_vectorize_layer(example_notes)
+example_tokenised_durations = durations_vectorize_layer(example_durations)
+print("{:10} {:10}".format("note token", "duration token"))
+for i, (note_int, duration_int) in enumerate(zip(
+        example_tokenised_notes.numpy()[:11],
+        example_tokenised_durations.numpy()[:11],)):
+    print(f"{note_int:10}{duration_int:10}")
+
+notes_vocab_size = len(notes_vocab)
+durations_vocab_size = len(durations_vocab)
+
+# Display some token:note mappings
+print(f"\nNOTES_VOCAB: length = {len(notes_vocab)}")
+for i, note in enumerate(notes_vocab[:10]):
+    print(f"{i}: {note}")
+
+print(f"\nDURATIONS_VOCAB: length = {len(durations_vocab)}")
+# Display some token:duration mappings
+for i, note in enumerate(durations_vocab[:10]):
+    print(f"{i}: {note}")
+
+# # Create the Training Set
+
+# Create the training set of sequences and the same sequences shifted by one note
+def prepare_inputs(notes, durations):
+    notes = tf.expand_dims(notes, -1)
+    durations = tf.expand_dims(durations, -1)
+    tokenized_notes = notes_vectorize_layer(notes)
+    tokenized_durations = durations_vectorize_layer(durations)
+    x = (tokenized_notes[:, :-1], tokenized_durations[:, :-1])
+    y = (tokenized_notes[:, 1:], tokenized_durations[:, 1:])
+    return x, y
+
+ds = seq_ds.map(prepare_inputs).repeat(DATASET_REPETITIONS)
+
+example_input_output = ds.take(1).get_single_element()
+print(example_input_output)
+
+# # Create the Causal Attention Mask Function
 

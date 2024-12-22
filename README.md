@@ -29,6 +29,10 @@ by David Foster.
 * 2024.11.3: StyleGAN & StyleGAN2, Xiaojie
 * 2024.11.16: StyleGAN2, Xiaojie
 * 2024.11.30: Xiaojie: VQ-GAN & Leo: Music generation
+* 2024.12.8: Xiaojie: ViT VQ-GAN
+* 2024.12.15: Leo: Music Transformer
+* 2024.12.22: Leo: MuseGAN
+
 
 ## Running Codes
 

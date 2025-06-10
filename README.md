@@ -53,6 +53,10 @@ by David Foster.
 * 2025.5.29: Generate reading notes with LLM and MCP by Guangyu
 * 2025.6.7: Reinforcement Learning, Chapter 2 by Guangyu
 
+References:
+
+* [Reinforcement-Learning-2nd-Edition-by-Sutton-Exercise-Solutions](https://github.com/LyWangPX/Reinforcement-Learning-2nd-Edition-by-Sutton-Exercise-Solutions)
+
 ## Running Codes
 
 Install [uv](https://github.com/astral-sh/uv) and run:

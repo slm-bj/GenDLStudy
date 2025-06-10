@@ -464,7 +464,7 @@ model.fit(
 )
 
 # Save the final model
-model.save("./models/music_transformer_model")
+model.save("./models/music_transformer.keras")
 
 # # Generate music using the Transformer
 

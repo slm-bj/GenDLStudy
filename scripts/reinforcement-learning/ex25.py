@@ -35,13 +35,13 @@ class Agent:
 def run_experiment(bandit, agent, trials=1000):
     rewards = np.zeros(trials)
     best_action_counts = np.zeros(trials)
-    for t in range(trials):
+    for t in range(1,trials):
         action = agent.choose_action()
         reward = bandit.pull(action)
         agent.update(action, reward)
-        rewards[t] = reward
-        best_action_counts[t] = action == bandit.best_action
-    return rewards, best_action_counts
+        rewards[t] = rewards[t-1] + 1/t*(reward-rewards[t-1])
+        best_action_counts[t] = (action == bandit.best_action) + best_action_counts[t-1]
+    return rewards, best_action_counts/np.arange(trials)
 
 # Plot the results
 def plot_results(rewards, best_action_counts, epsilon):
@@ -61,6 +61,7 @@ def plot_results(rewards, best_action_counts, epsilon):
 # Main function
 if __name__ == "__main__":
     bandit = Bandit()
-    agent = Agent(epsilon=0.1)
+    agent = Agent(epsilon=0.2)
     rewards, best_action_counts = run_experiment(bandit, agent)
     plot_results(rewards, best_action_counts, agent.epsilon)
+
